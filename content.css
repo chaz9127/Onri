@@ -1,0 +1,20 @@
+#onri-sprite {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 2147483647;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  width: 37px;
+}
+
+#onri-sprite img {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#onri-sprite.flipped img {
+  transform: scaleX(-1);
+}
