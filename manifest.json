@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "onri",
+  "name": "Onri",
   "version": "1.0.0",
-  "description": "An animated sprite that lives at the bottom of your browser.",
+  "description": "An animated dinosaur pal that hangs out with you while you browse the internet",
   "permissions": ["storage", "activeTab"],
   "action": {
     "default_popup": "popup.html",
