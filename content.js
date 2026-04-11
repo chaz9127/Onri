@@ -179,6 +179,7 @@
   }
 
   function onActive() {
+    if (!visible) return;
     clearTimeout(deadTimer);
     deadTimer = null;
     setState("walk");

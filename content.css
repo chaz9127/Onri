@@ -6,13 +6,13 @@
   cursor: pointer;
   user-select: none;
   pointer-events: auto;
-  width: 37px;
 }
 
 #onri-sprite img {
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  margin-bottom: 0;
 }
 
 #onri-sprite.flipped img {
