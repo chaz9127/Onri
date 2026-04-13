@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Onri",
-  "version": "1.0.1",
-  "description": "An animated dinosaur pal that hangs out with you while you browse the internet.",
+  "version": "2.0.0",
+  "description": "Choose your animated browser pet to keep you company while you doom scroll the internet.",
   "permissions": ["storage", "activeTab"],
   "action": {
     "default_popup": "popup.html",
@@ -14,14 +14,14 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": ["dist/content.js"],
       "css": ["content.css"],
       "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["sprites/*/*"],
+      "resources": ["sprites/dino/*/*"],
       "matches": ["<all_urls>"]
     }
   ]
