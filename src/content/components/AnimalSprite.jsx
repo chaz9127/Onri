@@ -1,7 +1,11 @@
 import DinoSprite from './animals/Dino/DinoSprite';
+import CarySprite from './animals/Cary/CarySprite';
 
-// Renders the selected animal. Swap DinoSprite for a different animal component
-// when adding new sprites — each animal handles its own animation logic.
-export default function AnimalSprite({ visible }) {
-  return <DinoSprite visible={visible} />;
+export default function AnimalSprite({ selectedAnimals }) {
+  return (
+    <>
+      {selectedAnimals.includes('dino') && <DinoSprite />}
+      {selectedAnimals.includes('cary') && <CarySprite />}
+    </>
+  );
 }

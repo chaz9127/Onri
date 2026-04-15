@@ -1,4 +1,4 @@
-#onri-sprite {
+.onri-sprite {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -8,13 +8,13 @@
   pointer-events: auto;
 }
 
-#onri-sprite img {
+.onri-sprite img {
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   margin-bottom: 0;
 }
 
-#onri-sprite.flipped img {
+.onri-sprite.flipped img {
   transform: scaleX(-1);
 }

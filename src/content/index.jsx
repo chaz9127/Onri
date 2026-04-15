@@ -3,20 +3,16 @@ import { createRoot } from 'react-dom/client';
 import AnimalSprite from './components/AnimalSprite';
 
 function App() {
-  const [visible, setVisible] = useState(true);
+  const [selectedAnimals, setSelectedAnimals] = useState([]);
 
   useEffect(() => {
-    chrome.storage.local.get({ visible: true }, (result) => {
-      setVisible(result.visible);
+    chrome.storage.local.get({ selectedAnimals: ['dino'] }, (result) => {
+      setSelectedAnimals(result.selectedAnimals);
     });
 
     const handler = (message) => {
-      if (message.action === 'show') {
-        setVisible(true);
-        chrome.storage.local.set({ visible: true });
-      } else if (message.action === 'hide') {
-        setVisible(false);
-        chrome.storage.local.set({ visible: false });
+      if (message.action === 'selectAnimals') {
+        setSelectedAnimals(message.animals);
       }
     };
 
@@ -24,10 +20,10 @@ function App() {
     return () => chrome.runtime.onMessage.removeListener(handler);
   }, []);
 
-  return <AnimalSprite visible={visible} />;
+  return <AnimalSprite selectedAnimals={selectedAnimals} />;
 }
 
 const root = document.createElement('div');
-root.id = 'onri-root and test';
+root.id = 'onri-root';
 document.body.appendChild(root);
 createRoot(root).render(<App />);

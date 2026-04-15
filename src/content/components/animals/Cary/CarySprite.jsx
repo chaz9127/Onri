@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 
 const CONFIG = {
   fps: 8,
-  width: 64,
-  height: 47,
+  width: 48,
+  height: 48,
   walkSpeed: 1,
   runSpeed: 3,
   jumpHeight: 20,
@@ -12,25 +12,24 @@ const CONFIG = {
   minDirectionMs: 800,
   maxDirectionMs: 2500,
   animations: {
-    walk: { frames: 10, loop: true },
-    run:  { frames: 8,  loop: true },
-    jump: { frames: 12, loop: false },
-    idle: { frames: 10, loop: true },
-    dead: { frames: 8,  loop: false },
+    walk:  { frames: 4,  loop: true },
+    run:   { frames: 6,  loop: true },
+    jump:  { frames: 15, loop: false },
+    idle:  { frames: 7,  loop: true },
+    sleep: { frames: 4,  loop: false }, // stays on last frame like dead
   },
 };
 
-function frameUrl(animState, index) {
-  return chrome.runtime.getURL(
-    `sprites/dino/${animState}/${animState}_${index + 1}.png`
-  );
+function sheetUrl(animState) {
+  return chrome.runtime.getURL(`sprites/cary/${animState}.png`);
 }
 
-export default function DinoSprite() {
+export default function CarySprite() {
   const [renderState, setRenderState] = useState({
-    src: frameUrl('walk', 0),
+    animState: 'walk',
+    frameIndex: 0,
     left: 0,
-    bottom: -5,
+    bottom: 0,
     flipped: false,
   });
 
@@ -52,13 +51,13 @@ export default function DinoSprite() {
 
   // Main animation engine — set up once on mount, torn down on unmount
   useEffect(() => {
-    chrome.storage.local.get({ steps_dino: 0 }, (result) => {
-      stepsRef.current = result.steps_dino;
+    chrome.storage.local.get({ steps_cary: 0 }, (result) => {
+      stepsRef.current = result.steps_cary;
     });
 
     function addStep() {
       stepsRef.current += 1;
-      chrome.storage.local.set({ steps_dino: stepsRef.current });
+      chrome.storage.local.set({ steps_cary: stepsRef.current });
     }
     function setState(next) {
       if (animState.current === next) return;
@@ -117,7 +116,7 @@ export default function DinoSprite() {
             setState('walk');
             addStep(); // 1 step when jump cycle completes
           }
-          // dead holds its last frame — no transition
+          // sleep holds its last frame — no transition
         }
       }
 
@@ -138,7 +137,8 @@ export default function DinoSprite() {
       }
 
       setRenderState({
-        src: frameUrl(animState.current, frameIndex.current),
+        animState: animState.current,
+        frameIndex: frameIndex.current,
         left: posX.current,
         bottom: posY.current,
         flipped: !facingRight.current,
@@ -170,7 +170,7 @@ export default function DinoSprite() {
 
       clearTimeout(deadTimer.current);
       deadTimer.current = setTimeout(() => {
-        setState('dead');
+        setState('sleep');
         frameIndex.current = 0;
       }, CONFIG.inactiveDeadMs);
     }
@@ -183,7 +183,7 @@ export default function DinoSprite() {
     }
 
     const handleScroll = () => {
-      if (animState.current === 'idle' || animState.current === 'dead') return;
+      if (animState.current === 'idle' || animState.current === 'sleep') return;
       setState('run');
       clearTimeout(scrollTimer.current);
       scrollTimer.current = setTimeout(() => {
@@ -216,23 +216,28 @@ export default function DinoSprite() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClick = () => {
-    if (animState.current === 'dead') return;
+    if (animState.current === 'sleep') return;
     animState.current = 'jump';
     frameIndex.current = 0;
   };
 
   return (
     <div
-      className={`onri-sprite${renderState.flipped ? ' flipped' : ''}`}
+      className="onri-sprite"
       style={{ left: renderState.left + 'px', bottom: renderState.bottom + 'px' }}
       onClick={handleClick}
     >
-      <img
-        src={renderState.src}
-        width={CONFIG.width}
-        height={CONFIG.height}
-        alt=""
-        draggable={false}
+      <div
+        style={{
+          width: CONFIG.width,
+          height: CONFIG.height,
+          backgroundImage: `url(${sheetUrl(renderState.animState)})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: `-${renderState.frameIndex * CONFIG.width}px 0`,
+          backgroundSize: 'auto 100%',
+          imageRendering: 'pixelated',
+          transform: renderState.flipped ? 'scaleX(-1)' : undefined,
+        }}
       />
     </div>
   );
