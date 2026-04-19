@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Onri",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Choose your animated browser pet to keep you company while you doom scroll the internet.",
   "permissions": ["storage", "activeTab"],
   "icons": {
@@ -33,7 +33,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["sprites/dino/*/*", "sprites/cary/*"],
+      "resources": ["sprites/dino/*/*", "sprites/cary/*", "sprites/pug/*"],
       "matches": ["<all_urls>"]
     }
   ]

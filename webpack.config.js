@@ -1,6 +1,7 @@
 const path = require('path');
 
-module.exports = {
+module.exports = (env, argv) => ({
+  devtool: argv.mode === 'production' ? false : 'cheap-source-map',
   entry: {
     content: './src/content/index.jsx',
     popup: './src/popup/index.jsx',
@@ -21,4 +22,4 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
   },
-};
+});

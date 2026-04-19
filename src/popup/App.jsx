@@ -4,10 +4,24 @@ import millify from 'millify';
 const ANIMALS = [
   { id: 'dino', label: 'Chomp' },
   { id: 'cary', label: 'Pantheon' },
+  { id: 'pug', label: 'Munchie' },
 ];
 
 function dinoPreviewUrl() {
   return chrome.runtime.getURL('sprites/dino/idle/idle_1.png');
+}
+
+function pugPreviewStyle() {
+  const url = chrome.runtime.getURL('sprites/pug/animations.png');
+  return {
+    width: 36,
+    height: 32,
+    backgroundImage: `url(${url})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: '0px -128px', // idle row (row 2), first frame
+    backgroundSize: '677px 478px',
+    imageRendering: 'pixelated',
+  };
 }
 
 function caryPreviewStyle() {
@@ -39,7 +53,19 @@ function StepCount({ count }) {
   );
 }
 
-function AnimalCard({ id, label, selected, steps, onToggle }) {
+const PUG_UNLOCK_STEPS = 50_000;
+
+function TotalSteps({ total }) {
+  const formatted = millify(total, { precision: 1 });
+  return (
+    <div style={{ textAlign: 'center', marginBottom: 4 }}>
+      <span style={{ fontSize: 20, fontWeight: 700 }}>{formatted}</span>
+      <span style={{ fontSize: 11, color: '#888', marginLeft: 4 }}>total steps</span>
+    </div>
+  );
+}
+
+function AnimalCard({ id, label, selected, steps, onToggle, locked }) {
   const preview =
     id === 'dino' ? (
       <img
@@ -47,17 +73,21 @@ function AnimalCard({ id, label, selected, steps, onToggle }) {
         width={64}
         height={47}
         alt=""
-        style={{ imageRendering: 'pixelated' }}
+        style={{ imageRendering: 'pixelated', opacity: locked ? 0.35 : 1 }}
       />
+    ) : id === 'pug' ? (
+      <div style={{ ...pugPreviewStyle(), opacity: locked ? 0.35 : 1 }} />
     ) : (
-      <div style={caryPreviewStyle()} />
+      <div style={{ ...caryPreviewStyle(), opacity: locked ? 0.35 : 1 }} />
     );
-    const fullSteps = steps.toLocaleString();
+  const fullSteps = steps.toLocaleString();
   return (
-    <div title={`${fullSteps} steps`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
-      
+    <div
+      title={locked ? `Unlock at ${PUG_UNLOCK_STEPS.toLocaleString()} total steps` : `${fullSteps} steps`}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: '1 1 calc(50% - 8px)', maxWidth: 'calc(50% - 8px)' }}
+    >
       <button
-        onClick={() => onToggle(id)}
+        onClick={() => !locked && onToggle(id)}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -67,19 +97,23 @@ function AnimalCard({ id, label, selected, steps, onToggle }) {
           padding: '10px 0',
           border: selected ? '2px solid #4a9eff' : '2px solid #ddd',
           borderRadius: 8,
-          background: selected ? '#e8f2ff' : '#f9f9f9',
-          cursor: 'pointer',
+          background: locked ? '#f0f0f0' : selected ? '#e8f2ff' : '#f9f9f9',
+          cursor: locked ? 'not-allowed' : 'pointer',
           width: '100%',
           minHeight: 80,
         }}
       >
-        {<StepCount count={steps} />}
+        {locked ? (
+          <span style={{ fontSize: 11, color: '#bbb' }}>🔒 {millify(PUG_UNLOCK_STEPS)} steps</span>
+        ) : (
+          <StepCount count={steps} />
+        )}
         {preview}
         <span
           style={{
             fontSize: 11,
             fontWeight: selected ? 700 : 400,
-            color: selected ? '#1a6fd4' : '#555',
+            color: locked ? '#bbb' : selected ? '#1a6fd4' : '#555',
           }}
         >
           {label}
@@ -91,14 +125,14 @@ function AnimalCard({ id, label, selected, steps, onToggle }) {
 
 export default function App() {
   const [selected, setSelected] = useState([]);
-  const [steps, setSteps] = useState({ dino: 0, cary: 0 });
+  const [steps, setSteps] = useState({ dino: 0, cary: 0, pug: 0 });
 
   useEffect(() => {
     chrome.storage.local.get(
-      { selectedAnimals: ['dino'], steps_dino: 0, steps_cary: 0 },
+      { selectedAnimals: ['dino'], steps_dino: 0, steps_cary: 0, steps_pug: 0 },
       (result) => {
         setSelected(result.selectedAnimals);
-        setSteps({ dino: result.steps_dino, cary: result.steps_cary });
+        setSteps({ dino: result.steps_dino, cary: result.steps_cary, pug: result.steps_pug });
       }
     );
 
@@ -108,6 +142,9 @@ export default function App() {
       }
       if (changes.steps_cary) {
         setSteps((s) => ({ ...s, cary: changes.steps_cary.newValue ?? 0 }));
+      }
+      if (changes.steps_pug) {
+        setSteps((s) => ({ ...s, pug: changes.steps_pug.newValue ?? 0 }));
       }
     };
 
@@ -128,9 +165,13 @@ export default function App() {
     });
   };
 
+  const totalSteps = Object.values(steps).reduce((s, n) => s + n, 0);
+  const pugLocked = totalSteps < PUG_UNLOCK_STEPS;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'flex', gap: 16 }}>
+      <TotalSteps total={totalSteps} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
         {ANIMALS.map((a) => (
           <AnimalCard
             key={a.id}
@@ -139,6 +180,7 @@ export default function App() {
             selected={selected.includes(a.id)}
             steps={steps[a.id]}
             onToggle={handleToggle}
+            locked={a.id === 'pug' && pugLocked}
           />
         ))}
       </div>
